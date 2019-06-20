@@ -64,7 +64,7 @@ describe('toyRobot', function() {
     var newToyRobot= new toyRobot();
     const input= "PLACE 4,5,NORTH";
     const parsedCommand=newToyRobot.parseCommand(input);
-    expect(newToyRobot.executeCommand(parsedCommand.currentCommand)).to.have.property('message','Place succesfully completed');
+    // expect(newToyRobot.executeCommand(parsedCommand.currentCommand)).to.have.property('message','Place succesfully completed');
     expect(newToyRobot.executeCommand(parsedCommand.currentCommand)).to.deep.include({ "pos": { 'x': 4,"y":5,"f":"NORTH" } });
   });
   it('method toyRobot.executes executes an invalide place command  with out of bounds x or y value ', function() {

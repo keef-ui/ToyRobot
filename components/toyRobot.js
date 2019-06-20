@@ -15,7 +15,7 @@ class ToyRobot {
     this.currentX = 0;
     this.currentY = 0;
     this.currentFacing = "";
-    this.facing = ["NORTH", "SOUTH", "EAST", "WEST"]; //0=north,1=south,2=east,3=west
+    this.directions = ["NORTH", "SOUTH", "EAST", "WEST"]; //0=north,1=south,2=east,3=west
     this.suportedCommands = ["PLACE", "MOVE", "LEFT", "RIGHT", "REPORT"];
   }
   parseCommand(input = "") { // Accepts a string , does a  Parse  for validity then issue valid commands to the robot
@@ -23,7 +23,7 @@ class ToyRobot {
     let currentCommand = { "command": "", "x": 0, "y": 0, "f": 0 };
     const command = input.toUpperCase().split(" ");
     const length = command.length;
-    const F = this.facing;
+    const directions = this.directions;
     const suportedCommands = this.suportedCommands;
     const isInCommandList = suportedCommands.indexOf(command[0]);
     let message = "";
@@ -34,12 +34,12 @@ class ToyRobot {
       if (values.length === 3) {
         const filteredX = this.filterIntt(values[0]);
         const filteredY = this.filterIntt(values[1]);
-        if (filteredX != NaN) currentCommand["x"] = filteredX 
+        if (filteredX != NaN) currentCommand["x"] = filteredX
         //  if (filteredY!=NaN) {currentCommand['y']=filteredY}
         filteredY != NaN ? currentCommand["y"] = filteredY : currentCommand = { "command": "INVALID" };
-        const face = F.indexOf(values[2]);
+        const face = directions.indexOf(values[2]);
         // if (face!=-1) currentCommand['f']=F[face];
-        face != -1 ? currentCommand["f"] = F[face] : currentCommand = { "command": "INVALID" };
+        face != -1 ? currentCommand["f"] = directions[face] : currentCommand = { "command": "INVALID" };
 
         if (currentCommand["command"] != "INVALID" && this.start === false) this.start = true; // robot started with place command
 
@@ -63,80 +63,13 @@ class ToyRobot {
     let message = "Place command was unsuccessful";
     let currentPos;
     const actions = {
-      "PLACE": (command) => {
-        if (command.x >= this.minX && command.x <= this.maxX && command.y >= this.minY && command.y <= this.maxY) move = true;
+      "PLACE": this.placeCommand(command, move, message, currentPos),
+      "MOVE": this.moveCommand(command, move, message, currentPos),
+      "LEFT": this.leftCommand(command, move, message, currentPos),
+      "RIGHT": this.rightCommand(command, move, message, currentPos),
+      "REPORT": this.reportCommand(command, move, message, currentPos),
+      "default": () => "Default item"
 
-        if (move) {
-          this.currentX = command.x, this.currentY = command.y, this.currentFacing = command.f;
-          message = "Place succesfully completed";
-        }
-        currentPos = this.getCurrentPosition();
-        return { message, "pos": currentPos };
-      },
-      "MOVE": () => {
-        const f = this.currentFacing;
-        const orientationIndex = this.facing.indexOf(f);
-        switch (orientationIndex) {  // Depending on the orientation  increment/decremnet x y values.
-          // And make sure the robot does not fall of the table
-          case 0: { //Traveling North
-            if (this.currentY < 5) { ++this.currentY; message = "Move succesfully completed"; }
-            break;
-          }
-          case 1: { //Traveling South
-            if (this.currentY > 0) { --this.currentY; message = "Move succesfully completed"; }
-            break;
-          }
-          case 2: {  //Traveling East
-
-            if (this.currentX < 5) { ++this.currentX; message = "Move succesfully completed"; }
-            break;
-          }
-          case 3: {  //Traveling West
-            if (this.currentX > 0) { --this.currentX; message = "Move succesfully completed"; }
-
-            break;
-          }
-          default: { //Default 
-
-          }
-        }
-        currentPos = this.getCurrentPosition();
-
-        return { message, "pos": currentPos };
-      },
-      "LEFT": () => { //Rotate left
-        const compass = ["WEST", "NORTH", "EAST", "SOUTH"]
-        const f = this.currentFacing;
-        let orientationIndex = compass.indexOf(f);
-        (orientationIndex > 0) ? --orientationIndex : orientationIndex = 3; // Rotate left based on an index value
-        this.currentFacing = compass[orientationIndex];
-        currentPos = this.getCurrentPosition();
-        message = "Move succesfully completed";
-        return { message, "pos": currentPos };
-      },
-      "RIGHT": () => {  //Rotate right
-        const compass = ["WEST", "NORTH", "EAST", "SOUTH"]
-        const f = this.currentFacing;
-        let orientationIndex = compass.indexOf(f);
-
-        (orientationIndex < 3) ? ++orientationIndex : orientationIndex = 0; // Rotate right based on an index value
-
-        this.currentFacing = compass[orientationIndex];
-        currentPos = this.getCurrentPosition();
-        message = "Rotate succesfully completed"
-        return { message, "pos": currentPos };
-      },
-      "REPORT": () => { // get report
-
-        message = "Report succesfully completed";
-        currentPos = this.getCurrentPosition();
-        return { message, "pos": currentPos };
-
-      },
-      "default"() {
-        // console.log(command);
-        return "Default item";
-      }
     };
     // if the actions Object contains the command
     // passed in, let's use it
@@ -164,6 +97,96 @@ class ToyRobot {
     } else {
       return NaN;
     }
+  }
+
+  placeCommand(command, move, message, currentPos) {
+    return (
+      () => {
+
+        if (command.x >= this.minX && command.x <= this.maxX && command.y >= this.minY && command.y <= this.maxY) move = true;
+        if (move) {
+          this.currentX = command.x, this.currentY = command.y, this.currentFacing = command.f;
+          message = "Place succesfully completed";
+        }
+        currentPos = this.getCurrentPosition();
+
+        return { message, "pos": currentPos };
+      }
+    )
+  }
+  moveCommand(command, move, message, currentPos) {
+    return (
+      () => {
+        const f = this.currentFacing;
+        const orientationIndex = this.directions.indexOf(f);
+        switch (orientationIndex) {  // Depending on the orientation  increment/decremnet x y values.
+          // And make sure the robot does not fall of the table
+          case 0: { //Traveling North
+            if (this.currentY < 5) { ++this.currentY; message = "Move succesfully completed"; }
+            break;
+          }
+          case 1: { //Traveling South
+            if (this.currentY > 0) { --this.currentY; message = "Move succesfully completed"; }
+            break;
+          }
+          case 2: {  //Traveling East
+
+            if (this.currentX < 5) { ++this.currentX; message = "Move succesfully completed"; }
+            break;
+          }
+          case 3: {  //Traveling West
+            if (this.currentX > 0) { --this.currentX; message = "Move succesfully completed"; }
+
+            break;
+          }
+          default: { //Default 
+
+          }
+        }
+        currentPos = this.getCurrentPosition();
+
+        return { message, "pos": currentPos };
+      }
+    )
+  }
+  leftCommand(command, move, message, currentPos) {
+    return (
+      () => { //Rotate left
+        const compass = ["WEST", "NORTH", "EAST", "SOUTH"]
+        const f = this.currentFacing;
+        let orientationIndex = compass.indexOf(f);
+        (orientationIndex > 0) ? --orientationIndex : orientationIndex = 3; // Rotate left based on an index value
+        this.currentFacing = compass[orientationIndex];
+        currentPos = this.getCurrentPosition();
+        message = "Move succesfully completed";
+        return { message, "pos": currentPos };
+      }
+    )
+  }
+  rightCommand(command, message, move, currentPos) {
+    return (() => {  //Rotate right
+      const compass = ["WEST", "NORTH", "EAST", "SOUTH"]
+      const f = this.currentFacing;
+      let orientationIndex = compass.indexOf(f);
+
+      (orientationIndex < 3) ? ++orientationIndex : orientationIndex = 0; // Rotate right based on an index value
+
+      this.currentFacing = compass[orientationIndex];
+      currentPos = this.getCurrentPosition();
+      message = "Rotate succesfully completed"
+      return { message, "pos": currentPos };
+    })
+  }
+  reportCommand(command, message, move, currentPos) {
+    return (
+      () => { // get report
+
+        message = "Report succesfully completed";
+        currentPos = this.getCurrentPosition();
+        return { message, "pos": currentPos };
+
+      }
+    )
   }
 }
 
