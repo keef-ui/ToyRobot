@@ -20,7 +20,7 @@ class ToyRobot {
   }
   parseCommand(input = "") { // Accepts a string , does a  Parse  for validity then issue valid commands to the robot
 
-    let resultCommand = { "command": "", "x": 0, "y": 0, "f": 0 };
+    let currentCommand = { "command": "", "x": 0, "y": 0, "f": 0 };
     const command = input.toUpperCase().split(" ");
     const length = command.length;
     const F = this.facing;
@@ -29,33 +29,33 @@ class ToyRobot {
     let message = "";
 
     if (length === 2 && command[0] === "PLACE") {
-      resultCommand["command"] = "PLACE";
+      currentCommand["command"] = "PLACE";
       const values = command[1].split(",");
       if (values.length === 3) {
         const filteredX = this.filterIntt(values[0]);
         const filteredY = this.filterIntt(values[1]);
-        if (filteredX != NaN) { resultCommand["x"] = filteredX }
-        //  if (filteredY!=NaN) {resultCommand['y']=filteredY}
-        filteredY != NaN ? resultCommand["y"] = filteredY : resultCommand = { "command": "INVALID" };
+        if (filteredX != NaN) currentCommand["x"] = filteredX 
+        //  if (filteredY!=NaN) {currentCommand['y']=filteredY}
+        filteredY != NaN ? currentCommand["y"] = filteredY : currentCommand = { "command": "INVALID" };
         const face = F.indexOf(values[2]);
-        // if (face!=-1) resultCommand['f']=F[face];
-        face != -1 ? resultCommand["f"] = F[face] : resultCommand = { "command": "INVALID" };
+        // if (face!=-1) currentCommand['f']=F[face];
+        face != -1 ? currentCommand["f"] = F[face] : currentCommand = { "command": "INVALID" };
 
-        if (resultCommand["command"] != "INVALID" && this.start === false) this.start = true; // robot started with place command
+        if (currentCommand["command"] != "INVALID" && this.start === false) this.start = true; // robot started with place command
 
-      } else { resultCommand = { "command": "INVALID" } }
+      } else { currentCommand = { "command": "INVALID" } }
     } else if (isInCommandList != -1) {
-      // resultCommand={"command":"MOVE"};
-      resultCommand["command"] = suportedCommands[isInCommandList];
+      // currentCommand={"command":"MOVE"};
+      currentCommand["command"] = suportedCommands[isInCommandList];
     }
 
-    if (isInCommandList === -1 || this.start === false) { resultCommand = { "command": "INVALID" } } else {
+    if (isInCommandList === -1 || this.start === false) { currentCommand = { "command": "INVALID" } } else {
       // execute command
-      message = this.executeCommand(resultCommand);
+      // message = this.executeCommand(currentCommand);
 
 
     }
-    return { resultCommand, "response": message };
+    return { currentCommand };
   }
   executeCommand(command) { // Execute commands PLACE,MOVE,LEFT,RIGHT,REPORT
     let fn;
